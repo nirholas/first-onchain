@@ -1,15 +1,40 @@
 {
   "name": "first-onchain",
   "version": "1.0.0",
-  "private": true,
+  "description": "An onchain creation studio for Solana inscriptions, agent manifests, vanity keypairs, and Token-2022 launches.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nirholas/first-onchain.git"
+  },
+  "homepage": "https://github.com/nirholas/first-onchain#readme",
+  "bugs": {
+    "url": "https://github.com/nirholas/first-onchain/issues"
+  },
+  "files": [
+    "app",
+    "components",
+    "lib",
+    "public",
+    "next-env.d.ts",
+    "next.config.ts",
+    "tsconfig.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@react-three/drei": "latest",
@@ -20,7 +45,6 @@
     "@solana-program/token-2022": "0.17.0",
     "@solana/react": "8.3.0",
     "@solana/wallet-standard-features": "1.5.0",
-    "@solana/web3.js": "latest",
     "bs58": "latest",
     "clsx": "latest",
     "jose": "latest",
@@ -33,13 +57,16 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.6",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/three": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "esbuild": "0.28.1",
     "typescript": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "wrangler": "4.131.2"
   }
 }

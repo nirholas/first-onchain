@@ -1,5 +1,8 @@
 node_modules
 .next
+.open-next
+.wrangler
+.dev.vars
 .env
 .env.local
 coverage

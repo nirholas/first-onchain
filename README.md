@@ -2,7 +2,7 @@
 
 The onchain creation studio for Solana. First lets anyone inscribe text, JSON, SVG and small media; publish a portable agent manifest; generate a vanity keypair locally; and launch a Token-2022 coin with native metadata.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black) ![Solana](https://img.shields.io/badge/Solana-Token--2022-111) ![License](https://img.shields.io/badge/license-MIT-cbff62)
+![Next.js](https://img.shields.io/badge/Next.js-15-black) ![Solana](https://img.shields.io/badge/Solana-Token--2022-111) ![License](https://img.shields.io/badge/license-Apache--2.0-cbff62)
 
 ## Why
 
@@ -59,6 +59,8 @@ Indexers group by `id`, require parts `1...total`, preserve order, and verify th
 5. Add monitoring, a CSP appropriate to your wallet support matrix, and jurisdiction-specific token disclosures.
 6. Independently review transactions and dependencies before handling assets of material value.
 
+Deployment runbooks for Cloudflare Workers and Google Cloud Run are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
 ## Important limitations
 
 - A token launch does not create liquidity, a market, or any expectation of value.
@@ -72,4 +74,4 @@ Issues and pull requests are welcome. Protocol changes must remain backward-comp
 
 ## License
 
-MIT © First contributors
+Apache-2.0 © First contributors

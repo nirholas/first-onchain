@@ -17,7 +17,7 @@ People keep making cultural “firsts” onchain. The hard part should be decidi
 - Local-only PNG, JPEG, WebP, and SVG optimization with an exact payload preview
 - Token-2022 mint creation with Metadata Pointer and native Token Metadata
 - Fixed-supply option that revokes mint authority after initial issuance
-- Local-only Solana vanity keypair generation and explicit JSON download
+- Isolated Web Worker vanity generation, local-only key material, stop control, and explicit JSON download
 - Wallet Standard connection and nonce-based Ed25519 wallet authentication
 - Onchain transaction decoder, responsive SaaS UI, Three.js hero, protocol docs
 - Devnet by default so a fresh clone is safe to explore

@@ -4,6 +4,11 @@ The onchain creation studio for Solana. First lets anyone inscribe text, JSON, S
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![Solana](https://img.shields.io/badge/Solana-Token--2022-111) ![License](https://img.shields.io/badge/license-Apache--2.0-cbff62)
 
+## Live
+
+- [Cloudflare Workers](https://first-onchain.ninabrekkerese.workers.dev) — global edge deployment
+- [Google Cloud Run](https://first-onchain-93741856042.us-central1.run.app) — containerized production deployment
+
 ## Why
 
 People keep making cultural “firsts” onchain. The hard part should be deciding what deserves permanence—not assembling instructions, estimating packet space, or trusting a custodial launcher. First turns those primitives into a clean, inspectable workflow.

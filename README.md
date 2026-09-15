@@ -11,7 +11,8 @@ People keep making cultural “firsts” onchain. The hard part should be decidi
 ## What works
 
 - Permanent, signer-attributed SPL Memo inscriptions using the open `first/1` envelope
-- UTF-8-safe multipart chunking for content larger than one transaction
+- Solana v1 transactions with a 4,096-byte ceiling and simulated resource limits
+- UTF-8-safe 3,600-byte multipart chunking for content larger than one transaction
 - Text, normalized JSON, data URI / compact SVG, and agent-manifest flows
 - Token-2022 mint creation with Metadata Pointer and native Token Metadata
 - Fixed-supply option that revokes mint authority after initial issuance
@@ -47,7 +48,7 @@ Every inscription is a JSON envelope in the instruction data of the public SPL M
 {"protocol":"first/1","id":"uuid","type":"text","part":1,"total":1,"data":"I was here."}
 ```
 
-Indexers group by `id`, require parts `1...total`, preserve order, and verify the same signer on each memo instruction. See the in-app `/docs` page for the full protocol and security model.
+Indexers group by `id`, require parts `1...total`, preserve order, and verify the same signer on each memo instruction. Readers must pass `maxSupportedTransactionVersion: 1`. See the in-app `/docs` page for the full protocol and security model.
 
 ## Production checklist
 

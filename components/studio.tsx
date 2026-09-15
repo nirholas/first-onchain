@@ -1,18 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import {
-  AuthorityType, ExtensionType, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction,
-  createInitializeMetadataPointerInstruction, createInitializeMintInstruction, createMintToInstruction,
-  createSetAuthorityInstruction, getAssociatedTokenAddressSync, getMintLen
-} from "@solana/spl-token";
-import { createInitializeInstruction, pack } from "@solana/spl-token-metadata";
-import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import bs58 from "bs58";
+import { useConnectedWallet } from "@solana/kit-plugin-wallet/react";
+import { address, generateKeyPairSigner, nonDivisibleSequentialInstructionPlan, some } from "@solana/kit";
+import { AuthorityType, extension, getSetAuthorityInstruction } from "@solana-program/token-2022";
+import { Keypair } from "@solana/web3.js";
 import { Bot, Braces, Coins, Fingerprint, Image as ImageIcon, LoaderCircle, Rocket, ShieldCheck } from "lucide-react";
 import { byteLength, createInscriptionInstructions, normalizeJson } from "@/lib/inscribe";
-import { explorerUrl, NETWORK } from "@/lib/constants";
+import { explorerUrl, MAX_MEMO_BYTES, NETWORK } from "@/lib/constants";
+import { useSolanaClient } from "./providers";
 
 type Tab = "inscribe" | "coin" | "agent" | "vanity";
 type Notice = { kind: "success" | "error"; message: string; href?: string } | null;
@@ -37,32 +33,33 @@ export function Studio() {
 }
 
 function useInscribe() {
-  const { connection } = useConnection();
-  const wallet = useWallet();
+  const client = useSolanaClient();
+  const connected = useConnectedWallet(client);
   const publish = async (content: string, type: "text" | "json" | "image" | "agent", onProgress?: (done: number, total: number) => void) => {
-    if (!wallet.publicKey || !wallet.sendTransaction) throw new Error("Connect a Solana wallet first.");
-    const instructions = createInscriptionInstructions(wallet.publicKey, content, type);
+    if (!connected?.signer) throw new Error("Connect a signing Solana wallet first.");
+    if (!connected.supportedTransactionVersions.has(1)) throw new Error("This wallet does not advertise transaction v1 support yet. Update it or choose a v1-ready wallet.");
+    const signer = connected.signer;
+    const instructions = createInscriptionInstructions(signer, content, type);
     let last = "";
     for (let i = 0; i < instructions.length; i++) {
-      const tx = new Transaction().add(instructions[i]);
-      last = await wallet.sendTransaction(tx, connection, { preflightCommitment: "confirmed" });
-      await connection.confirmTransaction(last, "confirmed");
+      const result = await client.sendTransaction(instructions[i]);
+      last = String(result.context.signature);
       onProgress?.(i + 1, instructions.length);
     }
     return { signature: last, count: instructions.length };
   };
-  return { publish, connected: wallet.connected };
+  return { publish, connected: Boolean(connected?.signer), supportsV1: connected?.supportedTransactionVersions.has(1) ?? false };
 }
 
 function InscribePanel() {
   const [type, setType] = useState<"text"|"json"|"image">("text");
   const [content, setContent] = useState(""); const [notice,setNotice]=useState<Notice>(null); const [busy,setBusy]=useState(false); const [progress,setProgress]=useState("");
-  const { publish, connected } = useInscribe();
-  const bytes = byteLength(content); const chunks = Math.max(1, Math.ceil(bytes / 720));
+  const { publish, connected, supportsV1 } = useInscribe();
+  const bytes = byteLength(content); const chunks = Math.max(1, Math.ceil(bytes / MAX_MEMO_BYTES));
   const run = async () => { try { setBusy(true);setNotice(null); let value=content;if(type==="json")value=normalizeJson(content); const result=await publish(value,type,(d,t)=>setProgress(`${d}/${t} transactions confirmed`)); setNotice({kind:"success",message:`Inscribed ${byteLength(value)} bytes across ${result.count} transaction${result.count===1?"":"s"}.`,href:explorerUrl(result.signature)}); } catch(e){setNotice({kind:"error",message:e instanceof Error?e.message:"Inscription failed"});} finally{setBusy(false);} };
   return <section className="panel"><div className="panel-head"><div><h2>Inscribe anything</h2><p>Write a permanent, signed payload through the SPL Memo program. Larger content is safely chunked and linked by one protocol ID.</p></div><ImageIcon size={30}/></div>
-    <div className="form-grid"><div className="field"><label>Artifact type</label><select value={type} onChange={e=>setType(e.target.value as typeof type)}><option value="text">Text</option><option value="json">JSON</option><option value="image">Image / data URI</option></select></div><div className="field"><label>Network</label><input value={NETWORK} disabled/></div><div className="field full"><label>Payload</label><textarea rows={11} value={content} onChange={e=>setContent(e.target.value)} placeholder={type === "json" ? '{"first":"hello, solana"}' : type === "image" ? "data:image/svg+xml;base64,…" : "I was here."}/><small>{bytes.toLocaleString()} bytes · estimated {chunks} transaction{chunks===1?"":"s"}</small><div className="meter"><i style={{width:`${Math.min(100,(bytes%720)/7.2)}%`}}/></div></div></div><NoticeBox notice={notice}/>
-    <div className="panel-actions"><small>{busy ? progress : "Signed by your wallet · no custody"}</small><button className="button" disabled={!content || busy || !connected} onClick={run}>{busy?<LoaderCircle size={16}/>:<Rocket size={16}/>} {connected ? busy?"Publishing…":"Inscribe onchain":"Connect wallet above"}</button></div>
+    <div className="form-grid"><div className="field"><label>Artifact type</label><select value={type} onChange={e=>setType(e.target.value as typeof type)}><option value="text">Text</option><option value="json">JSON</option><option value="image">Image / data URI</option></select></div><div className="field"><label>Network</label><input value={`${NETWORK} · transaction v1`} disabled/></div><div className="field full"><label>Payload</label><textarea rows={11} value={content} onChange={e=>setContent(e.target.value)} placeholder={type === "json" ? '{"first":"hello, solana"}' : type === "image" ? "data:image/svg+xml;base64,…" : "I was here."}/><small>{bytes.toLocaleString()} bytes · estimated {chunks} transaction{chunks===1?"":"s"} · 4,096-byte v1 format</small><div className="meter"><i style={{width:`${Math.min(100,(bytes%MAX_MEMO_BYTES)/(MAX_MEMO_BYTES/100))}%`}}/></div></div></div><NoticeBox notice={notice}/>
+    <div className="panel-actions"><small>{busy ? progress : connected && !supportsV1 ? "Wallet update required for v1" : "Transaction v1 · signed by your wallet · no custody"}</small><button className="button" disabled={!content || busy || !connected || !supportsV1} onClick={run}>{busy?<LoaderCircle size={16}/>:<Rocket size={16}/>} {connected ? supportsV1 ? busy?"Publishing…":"Inscribe onchain":"Wallet needs v1":"Connect wallet above"}</button></div>
   </section>;
 }
 
@@ -75,22 +72,24 @@ function AgentPanel() {
 }
 
 function CoinPanel() {
-  const { connection }=useConnection(); const wallet=useWallet(); const [form,setForm]=useState({name:"",symbol:"",supply:"1000000",decimals:"6",uri:""});const[revoke,setRevoke]=useState(true);const[notice,setNotice]=useState<Notice>(null);const[busy,setBusy]=useState(false);
+  const client=useSolanaClient(); const connected=useConnectedWallet(client); const [form,setForm]=useState({name:"",symbol:"",supply:"1000000",decimals:"6",uri:""});const[revoke,setRevoke]=useState(true);const[notice,setNotice]=useState<Notice>(null);const[busy,setBusy]=useState(false);
   const run=async()=>{try{
-    if(!wallet.publicKey||!wallet.sendTransaction)throw new Error("Connect a Solana wallet first.");
+    if(!connected?.signer)throw new Error("Connect a signing Solana wallet first.");
+    if(!connected.supportedTransactionVersions.has(1))throw new Error("This wallet does not advertise transaction v1 support yet.");
     if(!form.name.trim()||!form.symbol.trim())throw new Error("Name and symbol are required.");
     const decimals=Number(form.decimals);if(!Number.isInteger(decimals)||decimals<0||decimals>9)throw new Error("Decimals must be between 0 and 9.");
     const rawSupply=BigInt(form.supply)*10n**BigInt(decimals);if(rawSupply<=0n)throw new Error("Supply must be positive.");
-    setBusy(true);setNotice(null);const mint=Keypair.generate();const metadata={updateAuthority:wallet.publicKey,mint:mint.publicKey,name:form.name.trim(),symbol:form.symbol.trim().toUpperCase(),uri:form.uri.trim(),additionalMetadata:[] as [string,string][]};
-    const mintLen=getMintLen([ExtensionType.MetadataPointer]);const metadataLen=pack(metadata).length+8;const rent=await connection.getMinimumBalanceForRentExemption(mintLen+metadataLen);
-    const createTx=new Transaction().add(SystemProgram.createAccount({fromPubkey:wallet.publicKey,newAccountPubkey:mint.publicKey,space:mintLen+metadataLen,lamports:rent,programId:TOKEN_2022_PROGRAM_ID}),createInitializeMetadataPointerInstruction(mint.publicKey,wallet.publicKey,mint.publicKey,TOKEN_2022_PROGRAM_ID),createInitializeMintInstruction(mint.publicKey,decimals,wallet.publicKey,null,TOKEN_2022_PROGRAM_ID),createInitializeInstruction({programId:TOKEN_2022_PROGRAM_ID,metadata:mint.publicKey,updateAuthority:wallet.publicKey,mint:mint.publicKey,mintAuthority:wallet.publicKey,name:metadata.name,symbol:metadata.symbol,uri:metadata.uri}));
-    const sig1=await wallet.sendTransaction(createTx,connection,{signers:[mint]});await connection.confirmTransaction(sig1,"confirmed");
-    const ata=getAssociatedTokenAddressSync(mint.publicKey,wallet.publicKey,false,TOKEN_2022_PROGRAM_ID);const mintTx=new Transaction().add(createAssociatedTokenAccountInstruction(wallet.publicKey,ata,wallet.publicKey,mint.publicKey,TOKEN_2022_PROGRAM_ID),createMintToInstruction(mint.publicKey,ata,wallet.publicKey,rawSupply,[],TOKEN_2022_PROGRAM_ID));
-    if(revoke)mintTx.add(createSetAuthorityInstruction(mint.publicKey,wallet.publicKey,AuthorityType.MintTokens,null,[],TOKEN_2022_PROGRAM_ID));
-    const sig2=await wallet.sendTransaction(mintTx,connection);await connection.confirmTransaction(sig2,"confirmed");setNotice({kind:"success",message:`${metadata.symbol} launched at ${mint.publicKey.toBase58()}`,href:explorerUrl(mint.publicKey.toBase58(),"address")});
+    setBusy(true);setNotice(null);const signer=connected.signer;const owner=address(connected.account.address);const mint=await generateKeyPairSigner();const symbol=form.symbol.trim().toUpperCase();
+    const metadata=extension("TokenMetadata",{updateAuthority:some(owner),mint:mint.address,name:form.name.trim(),symbol,uri:form.uri.trim(),additionalMetadata:new Map<string,string>()});
+    const pointer=extension("MetadataPointer",{authority:some(owner),metadataAddress:some(mint.address)});
+    const createPlan=await client.token2022.instructions.createMint({payer:signer,newMint:mint,decimals,mintAuthority:signer,extensions:[pointer,metadata]});
+    const mintPlan=await client.token2022.instructions.mintToATA({payer:signer,owner,mint:mint.address,mintAuthority:signer,amount:rawSupply,decimals});
+    const revokeInstruction=getSetAuthorityInstruction({owned:mint.address,owner:signer,authorityType:AuthorityType.MintTokens,newAuthority:null});
+    const plans=revoke?[createPlan,mintPlan,revokeInstruction]:[createPlan,mintPlan];
+    await client.sendTransaction(nonDivisibleSequentialInstructionPlan(plans));setNotice({kind:"success",message:`${symbol} launched atomically at ${mint.address}`,href:explorerUrl(mint.address,"address")});
   }catch(e){setNotice({kind:"error",message:e instanceof Error?e.message:"Token launch failed"});}finally{setBusy(false)}};
   return <section className="panel"><div className="panel-head"><div><h2>Launch a coin</h2><p>Create a Token‑2022 mint with native metadata, mint the complete supply to your wallet, and optionally make that supply permanent.</p></div><Coins size={30}/></div><div className="form-grid">
-    <div className="field"><label>Token name</label><input maxLength={32} value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="My First Coin"/></div><div className="field"><label>Symbol</label><input maxLength={10} value={form.symbol} onChange={e=>setForm({...form,symbol:e.target.value})} placeholder="FIRST"/></div><div className="field"><label>Total supply</label><input inputMode="numeric" value={form.supply} onChange={e=>setForm({...form,supply:e.target.value.replace(/\D/g,"")})}/></div><div className="field"><label>Decimals</label><input type="number" min="0" max="9" value={form.decimals} onChange={e=>setForm({...form,decimals:e.target.value})}/></div><div className="field full"><label>Metadata URI (optional)</label><input type="url" value={form.uri} onChange={e=>setForm({...form,uri:e.target.value})} placeholder="https://arweave.net/…"/></div><div className="field full"><label><input type="checkbox" checked={revoke} onChange={e=>setRevoke(e.target.checked)} style={{width:"auto",marginRight:8}}/> Revoke mint authority after creation (fixed supply)</label><small>This is irreversible and prevents any future minting.</small></div></div><NoticeBox notice={notice}/><div className="panel-actions"><small>Two wallet approvals · rent + network fees</small><button className="button" disabled={!wallet.connected||busy||!form.name||!form.symbol} onClick={run}>{busy?"Launching…":"Launch token"}</button></div></section>;
+    <div className="field"><label>Token name</label><input maxLength={32} value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="My First Coin"/></div><div className="field"><label>Symbol</label><input maxLength={10} value={form.symbol} onChange={e=>setForm({...form,symbol:e.target.value})} placeholder="FIRST"/></div><div className="field"><label>Total supply</label><input inputMode="numeric" value={form.supply} onChange={e=>setForm({...form,supply:e.target.value.replace(/\D/g,"")})}/></div><div className="field"><label>Decimals</label><input type="number" min="0" max="9" value={form.decimals} onChange={e=>setForm({...form,decimals:e.target.value})}/></div><div className="field full"><label>Metadata URI (optional)</label><input type="url" value={form.uri} onChange={e=>setForm({...form,uri:e.target.value})} placeholder="https://arweave.net/…"/></div><div className="field full"><label><input type="checkbox" checked={revoke} onChange={e=>setRevoke(e.target.checked)} style={{width:"auto",marginRight:8}}/> Revoke mint authority after creation (fixed supply)</label><small>This is irreversible and prevents any future minting.</small></div></div><NoticeBox notice={notice}/><div className="panel-actions"><small>One atomic v1 approval · rent + network fees</small><button className="button" disabled={!connected||!connected.supportedTransactionVersions.has(1)||busy||!form.name||!form.symbol} onClick={run}>{busy?"Launching…":connected&&!connected.supportedTransactionVersions.has(1)?"Wallet needs v1":"Launch token"}</button></div></section>;
 }
 
 function VanityPanel(){

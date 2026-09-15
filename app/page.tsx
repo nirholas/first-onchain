@@ -1,8 +1,6 @@
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowRight, Bot, Braces, Coins, Fingerprint } from "lucide-react";
-
-const Orb = dynamic(() => import("@/components/orb").then(m => m.Orb), { ssr: false });
+import { Orb } from "@/components/orb";
 
 const features = [
   { icon: Braces, tag: "Memo protocol", title: "Inscribe anything", body: "Text, JSON, SVG, and small media written directly into signed Solana transactions." },

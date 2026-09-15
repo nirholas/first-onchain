@@ -1,5 +1,3 @@
-@import "@solana/wallet-adapter-react-ui/styles.css";
-
 :root {
   --ink: #101110;
   --paper: #f4f3ef;
@@ -26,6 +24,17 @@ button { cursor: pointer; }
 .brand-mark:after { content: "1"; color: var(--paper); font-size: 13px; }
 .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--muted); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
+.wallet-menu { position: relative; }
+.wallet-popover { position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; width: 290px; padding: 8px; border: 1px solid var(--line); border-radius: 18px; background: rgba(244,243,239,.97); box-shadow: 0 24px 60px rgba(0,0,0,.16); backdrop-filter: blur(18px); }
+.wallet-choice { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); text-align: left; }
+.wallet-choice:hover { background: rgba(16,17,16,.06); }
+.wallet-choice img { width: 22px; height: 22px; border-radius: 6px; }
+.wallet-current { display: grid; gap: 7px; padding: 10px 12px 12px; }
+.wallet-current code { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; }
+.v1-ready, .v1-missing { width: max-content; padding: 4px 7px; border-radius: 999px; font: 700 10px/1 monospace; text-transform: uppercase; }
+.v1-ready { background: rgba(131,205,82,.14); color: #467426; }
+.v1-missing { background: rgba(220,60,60,.1); color: #b73535; }
+.wallet-empty { padding: 10px 12px; color: var(--muted); font-size: 13px; }
 .network { padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; font: 12px monospace; }
 .network:before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #83cd52; margin-right: 7px; }
 

@@ -5,7 +5,7 @@ import { useConnectedWallet } from "@solana/kit-plugin-wallet/react";
 import { address, generateKeyPairSigner, nonDivisibleSequentialInstructionPlan, some } from "@solana/kit";
 import { AuthorityType, extension, getSetAuthorityInstruction } from "@solana-program/token-2022";
 import { Bot, Braces, Coins, Fingerprint, Image as ImageIcon, LoaderCircle, Rocket, ShieldCheck } from "lucide-react";
-import { byteLength, createInscriptionInstructions, normalizeJson } from "@/lib/inscribe";
+import { byteLength, createInscriptionChunks, createInscriptionInstructions, normalizeJson } from "@/lib/inscribe";
 import { explorerUrl, MAX_MEMO_BYTES, NETWORK } from "@/lib/constants";
 import { optimizeImageArtifact } from "@/lib/image-artifact";
 import { agentManifest, metadataUri, tokenAmount } from "@/lib/validation";
@@ -56,7 +56,7 @@ function InscribePanel() {
   const [type, setType] = useState<"text"|"json"|"image">("text");
   const [content, setContent] = useState(""); const [notice,setNotice]=useState<Notice>(null); const [busy,setBusy]=useState(false); const [progress,setProgress]=useState("");const[optimizing,setOptimizing]=useState(false);
   const { publish, connected, supportsV1 } = useInscribe();
-  const bytes = byteLength(content); const chunks = Math.max(1, Math.ceil(bytes / MAX_MEMO_BYTES));
+  const bytes = byteLength(content); const chunks = createInscriptionChunks(content,type).length;
   const chooseImage=async(file?:File)=>{if(!file)return;try{setOptimizing(true);setNotice(null);const artifact=await optimizeImageArtifact(file);setContent(artifact);setNotice({kind:"success",message:`Optimized locally from ${file.size.toLocaleString()} to ${byteLength(artifact).toLocaleString()} encoded bytes.`});}catch(e){setNotice({kind:"error",message:e instanceof Error?e.message:"Image optimization failed"})}finally{setOptimizing(false)}};
   const run = async () => { try { setBusy(true);setNotice(null); let value=content;if(type==="json")value=normalizeJson(content); const result=await publish(value,type,(d,t)=>setProgress(`${d}/${t} transactions confirmed`)); setNotice({kind:"success",message:`Inscribed ${byteLength(value)} bytes across ${result.count} transaction${result.count===1?"":"s"}.`,href:explorerUrl(result.signature)}); } catch(e){setNotice({kind:"error",message:e instanceof Error?e.message:"Inscription failed"});} finally{setBusy(false);} };
   return <section className="panel"><div className="panel-head"><div><h2>Inscribe anything</h2><p>Write a permanent, signed payload through the SPL Memo program. Larger content is safely chunked and linked by one protocol ID.</p></div><ImageIcon size={30}/></div>

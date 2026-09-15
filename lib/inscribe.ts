@@ -35,6 +35,22 @@ export function createInscriptionInstructions(
   type: InscriptionEnvelope["type"],
   id = crypto.randomUUID()
 ) {
+  const chunks = createInscriptionChunks(content, type, id);
+  return chunks.map((data, index) => {
+    const envelope: InscriptionEnvelope = { protocol: "first/1", id, type, part: index + 1, total: chunks.length, data };
+    return Object.freeze({
+      programAddress: MEMO_PROGRAM_ADDRESS,
+      accounts: [{ address: owner.address, role: AccountRole.READONLY_SIGNER, signer: owner }],
+      data: new TextEncoder().encode(JSON.stringify(envelope))
+    });
+  });
+}
+
+export function createInscriptionChunks(
+  content: string,
+  type: InscriptionEnvelope["type"],
+  id = "00000000-0000-4000-8000-000000000000"
+) {
   // Measure the serialized JSON, not only the source payload: quotes, slashes,
   // and control characters expand when escaped into the envelope.
   const characters = Array.from(content);
@@ -58,14 +74,7 @@ export function createInscriptionInstructions(
     chunks.push(characters.slice(cursor, best).join(""));
     cursor = best;
   }
-  return chunks.map((data, index) => {
-    const envelope: InscriptionEnvelope = { protocol: "first/1", id, type, part: index + 1, total: chunks.length, data };
-    return Object.freeze({
-      programAddress: MEMO_PROGRAM_ADDRESS,
-      accounts: [{ address: owner.address, role: AccountRole.READONLY_SIGNER, signer: owner }],
-      data: new TextEncoder().encode(JSON.stringify(envelope))
-    });
-  });
+  return chunks;
 }
 
 export function normalizeJson(value: string) {

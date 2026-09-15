@@ -2,7 +2,7 @@
 
 The onchain creation studio for Solana. First lets anyone inscribe text, JSON, SVG and small media; publish a portable agent manifest; generate a vanity keypair locally; and launch a Token-2022 coin with native metadata.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black) ![Solana](https://img.shields.io/badge/Solana-Token--2022-111) ![License](https://img.shields.io/badge/license-Apache--2.0-cbff62)
+![Next.js](https://img.shields.io/badge/Next.js-16-black) ![Solana](https://img.shields.io/badge/Solana-Token--2022-111) ![License](https://img.shields.io/badge/license-Apache--2.0-cbff62)
 
 ## Live
 
@@ -31,7 +31,7 @@ People keep making cultural “firsts” onchain. The hard part should be decidi
 
 ```bash
 cp .env.example .env.local
-npm install
+npm ci
 npm run dev
 ```
 
@@ -60,12 +60,21 @@ Indexers group by `id`, require parts `1...total`, preserve order, and verify th
 
 1. Use a dedicated, rate-limited RPC provider rather than the public endpoint.
 2. Generate a strong `SESSION_SECRET`, deploy over HTTPS, and add edge rate limiting to `/api/auth/*`.
-3. Run `npm run typecheck`, `npm test`, and `npm run build` in CI.
+3. Run the complete `npm run ci` release gate.
 4. Complete an end-to-end devnet inscription and mint before switching the network variable.
 5. Add monitoring, a CSP appropriate to your wallet support matrix, and jurisdiction-specific token disclosures.
 6. Independently review transactions and dependencies before handling assets of material value.
 
-Deployment runbooks for Cloudflare Workers and Google Cloud Run are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+## Documentation
+
+- [Architecture and trust boundaries](docs/ARCHITECTURE.md)
+- [Inscription protocol specification](docs/PROTOCOL.md)
+- [HTTP API reference](docs/API.md)
+- [Cloudflare and Cloud Run deployment](docs/DEPLOYMENT.md)
+- [Production operations and incident response](docs/OPERATIONS.md)
+- [Security policy](SECURITY.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
 
 ## Important limitations
 

@@ -1,25 +1,33 @@
 {
   "name": "first-onchain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An onchain creation studio for Solana inscriptions, agent manifests, vanity keypairs, and Token-2022 launches.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nirholas/first-onchain.git"
   },
-  "homepage": "https://github.com/nirholas/first-onchain#readme",
+  "homepage": "https://first-onchain.ninabrekkerese.workers.dev",
   "bugs": {
     "url": "https://github.com/nirholas/first-onchain/issues"
   },
   "files": [
     "app",
     "components",
+    "docs",
     "lib",
     "public",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "next-env.d.ts",
     "next.config.ts",
     "tsconfig.json"
   ],
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -37,7 +45,7 @@
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "check": "npm run lint && npm run typecheck && npm test",
     "ci": "npm run check && npm run build && npm run audit:prod",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "prepublishOnly": "npm run ci"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",

@@ -12,7 +12,15 @@ cp .dev.vars.example .dev.vars
 npm run preview:cloudflare
 ```
 
-For production, add `SESSION_SECRET` with `npx wrangler secret put SESSION_SECRET`, configure the public Solana values at build time, then run `npm run deploy:cloudflare`. The committed Wrangler configuration enables Workers observability and keeps generated output out of Git.
+For production, add `SESSION_SECRET` with `npx wrangler secret put SESSION_SECRET`, export the public Solana values before building, then run `npm run deploy:cloudflare`. `NEXT_PUBLIC_*` values are compiled into the browser bundle and cannot be changed after the build. The committed Wrangler configuration enables Workers observability and keeps generated output out of Git.
+
+```bash
+export NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta
+export NEXT_PUBLIC_SOLANA_RPC_URL=https://your-rpc.example
+export NEXT_PUBLIC_APP_URL=https://first.example
+npx wrangler secret put SESSION_SECRET
+npm run deploy:cloudflare
+```
 
 Required production values:
 
@@ -25,20 +33,27 @@ Required production values:
 
 The multi-stage Dockerfile builds Next.js standalone output and runs as an unprivileged user on port 8080.
 
+Build the container with the intended public configuration, push it to Artifact Registry, then deploy that immutable image:
+
 ```bash
+docker build \
+  --build-arg NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta \
+  --build-arg NEXT_PUBLIC_SOLANA_RPC_URL=https://your-rpc.example \
+  --build-arg NEXT_PUBLIC_APP_URL=https://first.example \
+  -t REGION-docker.pkg.dev/PROJECT/REPOSITORY/first-onchain:GIT_SHA .
+
 gcloud run deploy first-onchain \
-  --source . \
+  --image REGION-docker.pkg.dev/PROJECT/REPOSITORY/first-onchain:GIT_SHA \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta \
   --set-secrets SESSION_SECRET=first-onchain-session:latest
 ```
 
-Set public build-time variables through your build pipeline. Do not pass secrets as Docker build arguments. After deployment, exercise wallet sign-in, a devnet inscription, v1 explorer decoding, and a disposable fixed-supply mint before enabling mainnet.
+Never pass `SESSION_SECRET` or provider credentials as Docker build arguments. After deployment, check `/api/health`, exercise wallet sign-in, a devnet inscription, v1 explorer decoding, and a disposable fixed-supply mint before enabling mainnet.
 
 ## Release gates
 
-1. `npm ci && npm run typecheck && npm test && npm run build` passes.
+1. `npm ci && npm run ci` passes.
 2. Production dependency audit has no high or critical findings.
 3. Authentication and RPC endpoints are rate-limited at the edge.
 4. Logs and alerts cover 5xx responses, authentication spikes, and RPC failure rate.

@@ -76,6 +76,8 @@ Indexers group by `id`, require parts `1...total`, preserve order, and verify th
 - [Contributing guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
+The repository includes immutable Docker and Cloud Build paths; public Solana settings are injected during compilation, while session secrets remain runtime-only.
+
 ## Important limitations
 
 - A token launch does not create liquidity, a market, or any expectation of value.

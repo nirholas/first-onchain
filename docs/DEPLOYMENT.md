@@ -51,6 +51,19 @@ gcloud run deploy first-onchain \
   --set-secrets SESSION_SECRET=first-onchain-session:latest
 ```
 
+The checked-in `cloudbuild.yaml` performs the immutable build consistently. For the official devnet deployment:
+
+```bash
+SHA=$(git rev-parse --short=7 HEAD)
+gcloud builds submit --config cloudbuild.yaml --substitutions=_TAG=$SHA
+gcloud run deploy first-onchain \
+  --image us-central1-docker.pkg.dev/aerial-vehicle-466722-p5/first-onchain/web:$SHA \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --service-account first-onchain-sa@aerial-vehicle-466722-p5.iam.gserviceaccount.com \
+  --set-secrets SESSION_SECRET=first-onchain-session:latest
+```
+
 Never pass `SESSION_SECRET` or provider credentials as Docker build arguments. After deployment, check `/api/health`, exercise wallet sign-in, a devnet inscription, v1 explorer decoding, and a disposable fixed-supply mint before enabling mainnet.
 
 ## Release gates

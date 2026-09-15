@@ -1,0 +1,25 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - NEXT_PUBLIC_SOLANA_NETWORK=${_SOLANA_NETWORK}
+      - --build-arg
+      - NEXT_PUBLIC_SOLANA_RPC_URL=${_SOLANA_RPC_URL}
+      - --build-arg
+      - NEXT_PUBLIC_APP_URL=${_APP_URL}
+      - --build-arg
+      - GIT_SHA=${_TAG}
+      - --tag
+      - ${_IMAGE}:${_TAG}
+      - .
+images:
+  - ${_IMAGE}:${_TAG}
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/aerial-vehicle-466722-p5/first-onchain/web
+  _TAG: development
+  _SOLANA_NETWORK: devnet
+  _SOLANA_RPC_URL: https://api.devnet.solana.com
+  _APP_URL: https://first-onchain-93741856042.us-central1.run.app
+options:
+  logging: CLOUD_LOGGING_ONLY

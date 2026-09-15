@@ -11,6 +11,7 @@ All notable changes are recorded here. The project follows semantic versioning f
 - Strict First-envelope transaction decoding and 15-second RPC timeouts.
 - Exact envelope-aware multipart estimates.
 - Health endpoint, reproducible dependency pins, unified CI gate, and production operations documentation.
+- Immutable Cloud Build configuration with explicit browser build-time settings and revision reporting.
 - Complete npm package metadata and bundled protocol, API, security, and operations documentation.
 
 ### Security

@@ -14,6 +14,7 @@ People keep making cultural “firsts” onchain. The hard part should be decidi
 - Solana v1 transactions with a 4,096-byte ceiling and simulated resource limits
 - UTF-8-safe 3,600-byte multipart chunking for content larger than one transaction
 - Text, normalized JSON, data URI / compact SVG, and agent-manifest flows
+- Local-only PNG, JPEG, WebP, and SVG optimization with an exact payload preview
 - Token-2022 mint creation with Metadata Pointer and native Token Metadata
 - Fixed-supply option that revokes mint authority after initial issuance
 - Local-only Solana vanity keypair generation and explicit JSON download

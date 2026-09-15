@@ -107,6 +107,7 @@ h3 { letter-spacing: -.04em; }
 .field input, .field textarea, .field select { width: 100%; border: 1px solid var(--line); background: rgba(255,255,255,.7); border-radius: 14px; padding: 14px 15px; outline: none; resize: vertical; }
 .field input:focus, .field textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
 .field small { color: var(--muted); }
+.artifact-preview { display: block; width: min(100%, 440px); max-height: 330px; object-fit: contain; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: white; }
 .panel-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
 .status { padding: 14px 16px; border-radius: 14px; margin: 18px 0; border: 1px solid var(--line); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
 .status.success { background: rgba(203,255,98,.35); }.status.error { background: rgba(255,120,110,.15); }

@@ -29,6 +29,8 @@ Required production values:
 - `NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta`.
 - `NEXT_PUBLIC_APP_URL`: canonical HTTPS origin.
 
+The current deployment uses Workers Static Assets and does not require an R2 bucket or R2 access keys. Add R2 only if a future feature stores objects outside the onchain inscription flow; use a scoped Worker binding rather than shipping S3 credentials to the browser.
+
 ## Google Cloud Run
 
 The multi-stage Dockerfile builds Next.js standalone output and runs as an unprivileged user on port 8080.

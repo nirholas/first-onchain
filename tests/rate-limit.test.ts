@@ -11,4 +11,5 @@ describe("auth rate limiting", () => {
   });
   it("prefers the trusted Cloudflare address", () => expect(clientIdentifier(new Headers({ "cf-connecting-ip": "203.0.113.8", "x-forwarded-for": "spoofed" }))).toBe("203.0.113.8"));
   it("ignores a user-supplied prefix in a Google forwarding chain", () => expect(clientIdentifier(new Headers({ "x-forwarded-for": "spoofed, 203.0.113.9, 198.51.100.1" }))).toBe("203.0.113.9"));
+  it("bounds untrusted identifiers before storing them", () => expect(clientIdentifier(new Headers({ "cf-connecting-ip": "a".repeat(500) }))).toBe("a".repeat(128)));
 });

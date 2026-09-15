@@ -9,8 +9,6 @@ function secret() {
   return new TextEncoder().encode(value);
 }
 
-export const authMessage = (address: string, nonce: string, domain = "localhost:3000") => `${domain} wants you to sign in with your Solana account:\n${address}\n\nSign in to First. This request will not trigger a blockchain transaction or cost any gas.\n\nURI: ${domain}\nNonce: ${nonce}`;
-
 export async function issueSession(address: string) {
   return new SignJWT({ address }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setIssuer(ISSUER).setAudience(AUDIENCE).setIssuedAt().setExpirationTime("7d").sign(secret());
 }

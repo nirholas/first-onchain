@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { authMessage, issueSession, readSession } from "../lib/auth";
+import { issueSession, readSession } from "../lib/auth";
+import { authMessage } from "../lib/auth-message";
 
 describe("wallet authentication", () => {
   it("binds the challenge to the deployment domain", () => {
-    const message = authMessage("wallet", "nonce", "first.example");
+    const message = authMessage("wallet", "nonce", "first.example", "https://first.example");
     expect(message).toContain("first.example wants you to sign in");
-    expect(message).toContain("URI: first.example");
+    expect(message).toContain("URI: https://first.example");
     expect(message).toContain("Nonce: nonce");
   });
 

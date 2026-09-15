@@ -8,6 +8,7 @@ import { Bot, Braces, Coins, Fingerprint, Image as ImageIcon, LoaderCircle, Rock
 import { byteLength, createInscriptionInstructions, normalizeJson } from "@/lib/inscribe";
 import { explorerUrl, MAX_MEMO_BYTES, NETWORK } from "@/lib/constants";
 import { optimizeImageArtifact } from "@/lib/image-artifact";
+import { agentManifest, metadataUri, tokenAmount } from "@/lib/validation";
 import { useSolanaClient } from "./providers";
 
 type Tab = "inscribe" | "coin" | "agent" | "vanity";
@@ -66,8 +67,8 @@ function InscribePanel() {
 
 function AgentPanel() {
   const [form,setForm]=useState({name:"",description:"",endpoint:"",capabilities:"research, execute",version:"1.0.0"}); const [notice,setNotice]=useState<Notice>(null);const[busy,setBusy]=useState(false); const {publish,connected}=useInscribe();
-  const manifest=useMemo(()=>JSON.stringify({protocol:"first/agent/1",name:form.name,description:form.description,version:form.version,endpoint:form.endpoint,capabilities:form.capabilities.split(",").map(x=>x.trim()).filter(Boolean)},null,2),[form]);
-  const run=async()=>{try{setBusy(true);const result=await publish(JSON.stringify(JSON.parse(manifest)),"agent");setNotice({kind:"success",message:`Agent manifest published across ${result.count} transaction${result.count===1?"":"s"}.`,href:explorerUrl(result.signature)});}catch(e){setNotice({kind:"error",message:e instanceof Error?e.message:"Publish failed"});}finally{setBusy(false)}};
+  const manifest=useMemo(()=>JSON.stringify({protocol:"first/agent/1",name:form.name.trim(),description:form.description.trim(),version:form.version.trim(),endpoint:form.endpoint.trim(),capabilities:form.capabilities.split(",").map(x=>x.trim()).filter(Boolean)},null,2),[form]);
+  const run=async()=>{try{setBusy(true);setNotice(null);const validated=agentManifest(form);const result=await publish(JSON.stringify(validated),"agent");setNotice({kind:"success",message:`Agent manifest published across ${result.count} transaction${result.count===1?"":"s"}.`,href:explorerUrl(result.signature)});}catch(e){setNotice({kind:"error",message:e instanceof Error?e.message:"Publish failed"});}finally{setBusy(false)}};
   return <section className="panel"><div className="panel-head"><div><h2>Publish an agent</h2><p>Create a portable identity manifest for an AI agent, signed by its owner and discoverable from any Solana indexer.</p></div><Bot size={30}/></div><div className="form-grid">
     <div className="field"><label>Name</label><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="atlas"/></div><div className="field"><label>Version</label><input value={form.version} onChange={e=>setForm({...form,version:e.target.value})}/></div><div className="field full"><label>Description</label><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="An autonomous Solana research agent"/></div><div className="field full"><label>HTTPS endpoint</label><input type="url" value={form.endpoint} onChange={e=>setForm({...form,endpoint:e.target.value})} placeholder="https://agent.example.com/.well-known/agent.json"/></div><div className="field full"><label>Capabilities (comma-separated)</label><input value={form.capabilities} onChange={e=>setForm({...form,capabilities:e.target.value})}/></div><div className="field full"><label>Manifest preview</label><textarea rows={10} readOnly value={manifest}/></div></div><NoticeBox notice={notice}/><div className="panel-actions"><small><ShieldCheck size={13}/> Ownership is proven by your signature</small><button className="button" disabled={!connected||!form.name||!form.endpoint||busy} onClick={run}>{busy?"Publishing…":"Publish agent"}</button></div></section>;
 }
@@ -78,10 +79,9 @@ function CoinPanel() {
     if(!connected?.signer)throw new Error("Connect a signing Solana wallet first.");
     if(!connected.supportedTransactionVersions.has(1))throw new Error("This wallet does not advertise transaction v1 support yet.");
     if(!form.name.trim()||!form.symbol.trim())throw new Error("Name and symbol are required.");
-    const decimals=Number(form.decimals);if(!Number.isInteger(decimals)||decimals<0||decimals>9)throw new Error("Decimals must be between 0 and 9.");
-    const rawSupply=BigInt(form.supply)*10n**BigInt(decimals);if(rawSupply<=0n)throw new Error("Supply must be positive.");
+    const {amount:rawSupply,decimals}=tokenAmount(form.supply,form.decimals);const uri=metadataUri(form.uri);
     setBusy(true);setNotice(null);const signer=connected.signer;const owner=address(connected.account.address);const mint=await generateKeyPairSigner();const symbol=form.symbol.trim().toUpperCase();
-    const metadata=extension("TokenMetadata",{updateAuthority:some(owner),mint:mint.address,name:form.name.trim(),symbol,uri:form.uri.trim(),additionalMetadata:new Map<string,string>()});
+    const metadata=extension("TokenMetadata",{updateAuthority:some(owner),mint:mint.address,name:form.name.trim(),symbol,uri,additionalMetadata:new Map<string,string>()});
     const pointer=extension("MetadataPointer",{authority:some(owner),metadataAddress:some(mint.address)});
     const createPlan=await client.token2022.instructions.createMint({payer:signer,newMint:mint,decimals,mintAuthority:signer,extensions:[pointer,metadata]});
     const mintPlan=await client.token2022.instructions.mintToATA({payer:signer,owner,mint:mint.address,mintAuthority:signer,amount:rawSupply,decimals});

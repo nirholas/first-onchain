@@ -51,6 +51,7 @@ button { cursor: pointer; }
 h1 { font-size: clamp(64px, 9vw, 132px); letter-spacing: -.085em; line-height: .82; margin: 28px 0; max-width: 850px; }
 h2 { font-size: clamp(40px, 6vw, 78px); letter-spacing: -.065em; line-height: .94; margin: 0; }
 h3 { letter-spacing: -.04em; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .hero p { color: var(--muted); font-size: 19px; line-height: 1.55; max-width: 590px; }
 .hero-actions { display: flex; gap: 12px; margin-top: 30px; }
 .proof { display: flex; margin-top: 54px; gap: 40px; font: 12px monospace; text-transform: uppercase; color: var(--muted); }

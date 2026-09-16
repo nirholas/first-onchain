@@ -1,7 +1,20 @@
+import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
+
+// Container builds have no .git directory, so Cloud Build passes GIT_SHA; Git checkouts (Cloudflare) resolve HEAD.
+function resolveBuildCommit(): string {
+  const supplied = process.env.GIT_SHA;
+  if (supplied && supplied !== "development") return supplied;
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch {
+    return "development";
+  }
+}
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  env: { BUILD_COMMIT: resolveBuildCommit() },
   reactStrictMode: true,
   poweredByHeader: false,
   experimental: { optimizePackageImports: ["lucide-react"] },

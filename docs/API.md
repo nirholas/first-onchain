@@ -4,7 +4,7 @@ All responses are JSON. Authentication responses use `Cache-Control: no-store`.
 
 ## `GET /api/health`
 
-Returns service readiness metadata. A healthy response has status `200` and `{ "status": "ok" }`. Production returns `503` with `{ "status": "misconfigured" }` when `SESSION_SECRET` is missing or shorter than 32 characters. This endpoint does not test the external Solana RPC.
+Returns service readiness metadata. A healthy response has status `200` and `{ "status": "ok" }`. Production returns `503` with `{ "status": "misconfigured" }` when `SESSION_SECRET` is missing or shorter than 32 characters. `commit` is the Git commit baked into the build (Cloud Build passes it as `GIT_SHA`; Git checkouts resolve `HEAD`), and `revision` is the Cloud Run revision when running there, otherwise the commit. Compare `commit` across providers to confirm both serve the same release. This endpoint does not test the external Solana RPC.
 
 ## `GET /api/auth/nonce`
 

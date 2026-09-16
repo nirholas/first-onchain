@@ -2,6 +2,12 @@
 
 All notable changes are recorded here. The project follows semantic versioning from the first tagged stable release.
 
+## Unreleased
+
+### Fixed
+
+- `/api/health` now reports the exact Git commit baked into every build, so Cloudflare and Cloud Run can be confirmed to serve the same release (Cloudflare previously reported `development`).
+
 ## 1.0.1 — 2026-09-15
 
 ### Added

@@ -11,7 +11,8 @@ export function GET() {
       status: ready ? "ok" : "misconfigured",
       service: "first-onchain",
       network: NETWORK,
-      revision: process.env.K_REVISION ?? process.env.CF_VERSION_ID ?? process.env.GIT_SHA ?? "development",
+      commit: process.env.BUILD_COMMIT ?? "development",
+      revision: process.env.K_REVISION ?? process.env.BUILD_COMMIT ?? "development",
     },
     { status: ready ? 200 : 503, headers: { "Cache-Control": "no-store" } },
   );

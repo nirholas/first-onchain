@@ -92,3 +92,7 @@ Issues and pull requests are welcome. Protocol changes must remain backward-comp
 ## License
 
 Apache-2.0 © First contributors
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=nirholas/first-onchain&type=Date)](https://www.star-history.com/#nirholas/first-onchain&Date)

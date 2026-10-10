@@ -1,0 +1,28 @@
+# first-onchain
+
+> A transaction-v1 creation studio for atomic Solana launches, onchain media, agents, and vanity wallets.
+
+first-onchain is an open-source repository by nirholas, part of the three.ws ecosystem.
+
+## Docs
+
+- [README](https://github.com/nirholas/first-onchain/blob/HEAD/README.md): install, usage and reference
+- [Live](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#live)
+- [Why](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#why)
+- [What works](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#what-works)
+- [Run locally](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#run-locally)
+- [Environment](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#environment)
+- [Protocol](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#protocol)
+- [Production checklist](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#production-checklist)
+- [Documentation](https://github.com/nirholas/first-onchain/blob/HEAD/README.md#documentation)
+- [AGENTS.md](https://github.com/nirholas/first-onchain/blob/HEAD/AGENTS.md): guidance for coding agents
+- [Full text for LLMs](https://github.com/nirholas/first-onchain/blob/HEAD/llms-full.txt): the README inlined
+
+## Project
+
+- [Source](https://github.com/nirholas/first-onchain)
+- [Issues](https://github.com/nirholas/first-onchain/issues)
+- [Discussions](https://github.com/nirholas/first-onchain/discussions)
+- [Homepage](https://first-onchain-93741856042.us-central1.run.app)
+- [three.ws](https://three.ws): the platform this is part of
+- [All repositories by nirholas](https://github.com/nirholas/nirholas#readme)

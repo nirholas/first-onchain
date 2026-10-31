@@ -65,7 +65,7 @@
     "react-dom": "19.2.8",
     "three": "0.186.0",
     "tweetnacl": "1.0.3",
-    "zod": "3.25.76"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "1.20.6",
